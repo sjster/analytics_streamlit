@@ -53,6 +53,7 @@ if __name__ == '__main__':
         data = questions[questions['score'] >= 0]
         corr_matrix = questions[['score', 'view_count','answer_count']].corr()
 
+    # -------------- Header info ----------------#
     st.title("Stackoverflow queries for " + query)
     age = st.slider('How old are you?', 0, 130, 25)
     st.subheader("Data")
@@ -70,15 +71,16 @@ if __name__ == '__main__':
     st.subheader("Correlation matrix")
     st.write(corr_matrix)
 
-
+    # --------------- EDA and feature extraction --------------- #
     questions['creation_date_only'] = pd.to_datetime(questions['creation_date'].dt.date)
     questions_by_week = questions.set_index('creation_date_only').resample('M').count()['question_id']
     answers_and_views_by_week = questions.set_index('creation_date_only').resample('M').sum()[['view_count', 'answer_count']]
 
     print(data.mean())
 
+    # ----------------- Views ----------------#
+    st.subheader("Views")
     col1, col2 = st.columns([1,1])
-
     fig = px.histogram(questions['view_count'], nbins=200, title="Distribution of views for posts")
     with col1:
         st.plotly_chart(fig)
@@ -91,16 +93,19 @@ if __name__ == '__main__':
               y = pm.Poisson('y', mu=mu, observed=questions['view_count'])
               trace_t = pm.sample(1000)
         st.success('Complete')
-        fig = az.summary(trace_t)
-        st.write(fig)
+        summary = az.summary(trace_t)
+        st.metric('Mean estimate for views', summary['mean'])
+        st.write(summary)
 
+    # -------------------- Scores --------------- #
+    st.subheader("Scores")
     col3, col4 = st.columns([1,1])
     fig = px.histogram(questions['score'], nbins=200, title="Distribution of scores for posts")
     with col3:
         st.plotly_chart(fig)
 
     with col4:
-        st.subheader('Bayesian inference of the parameters of the scores distribution \n\n')
+        st.text('Bayesian inference of the parameters of the scores distribution \n\n')
         with st.spinner('Inferring the parameters of the score distribution (exponential)'):
             with pm.Model() as model:
               lam = pm.Uniform('lam', lower=0, upper=20)
@@ -118,6 +123,9 @@ if __name__ == '__main__':
     fig = px.histogram(questions['answer_count'], nbins=10, title="Distribution of answer counts for posts")
     with col6:
         st.plotly_chart(fig)
+
+    # ---------------------- Question timeseries ------------------ #
+    st.subheader("Time evolution of questions, answers and views")
 
     col7, col8 = st.columns([1,1])
     fig = px.bar(questions_by_week, title="Number of questions by month")
