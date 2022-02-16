@@ -72,7 +72,6 @@ def run_analytics(query):
 
     # -------------- Header info ----------------#
     st.title("Stackoverflow queries for " + query)
-    age = st.slider('How old are you?', 0, 130, 25)
     st.subheader("Data")
     headercol1, headercol2, headercol3, headercol4 = st.columns([1,1,1,1])
     num_questions = len(questions)
@@ -82,6 +81,9 @@ def run_analytics(query):
     headercol3.metric("Closed fraction", closed/num_questions)
     headercol4.metric("Questions with negative score", len(questions) - len(data))
     st.write(questions, width=20, height=100)
+
+    age = st.slider('Top n terms', 0, 130, 25)
+
     st.subheader("Summarize the data")
     if st.checkbox('Show dataframe'):
         st.write(questions.describe(include='all'))
