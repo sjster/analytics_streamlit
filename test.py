@@ -57,6 +57,7 @@ def run_analytics(query):
         data = questions[questions['score'] >= 0]
     else:
         filename = query + '_questions.json'
+        print("Reading file ",filename)
         questions = pd.read_json(filename)
         questions['creation_date'] = questions['creation_date'] / 1000
         questions['creation_date'] = questions['creation_date'].astype('datetime64[s]')
@@ -160,5 +161,5 @@ def run_analytics(query):
 
 if __name__ == '__main__':
 
-    query = 'pytorch'
+    query = 'mlflow'
     run_analytics(query)
