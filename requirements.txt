@@ -1,0 +1,11 @@
+arviz==0.11.2
+darts==0.17.0
+numpy==1.21.2
+pandas==1.3.5
+plotly==5.1.0
+pymc3==3.11.4
+StackAPI==0.2.0
+streamlit==1.5.1
+nomkl
+openmp
+tqdm
