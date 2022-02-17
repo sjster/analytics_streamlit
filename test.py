@@ -16,7 +16,7 @@ import plotly.express as px
 RUN_STACKOVERFLOW = 0
 st.set_page_config(layout='wide')
 
-nlp = spacy.load("en_core_web_sm")
+#nlp = spacy.load("en_core_web_sm")
 
 def apply_spacy(x):
   doc = nlp(x)
