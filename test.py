@@ -8,12 +8,22 @@ import pymc3 as pm
 import arviz as az
 from darts import TimeSeries
 from darts.models import ExponentialSmoothing, NaiveDrift
+import spacy
 from stackapi import StackAPI
 import pandas as pd
 import plotly.express as px
 
 RUN_STACKOVERFLOW = 0
 st.set_page_config(layout='wide')
+
+nlp = spacy.load("en_core_web_sm")
+
+def apply_spacy(x):
+  doc = nlp(x)
+  elem = list(doc.ents)
+  elem.extend(doc.noun_chunks)
+  #elem = { "Entities" : list(doc.ents), "Nouns": list(doc.noun_chunks) }
+  return(elem)
 
 
 def get_time_series_trend(df, columns, fig):
@@ -90,6 +100,16 @@ def run_analytics(query):
     st.subheader("Correlation matrix")
     st.write(corr_matrix)
 
+    # ---------------- Tags --------------- #
+    st.subheader("Distribution of tags in questions")
+    #questions['entities'] = questions['title'].apply(lambda x: apply_spacy(x))
+    flat_list = [item for sublist in questions['tags'].values for item in sublist]
+    tags_bar = pd.Series(flat_list).value_counts(ascending=False)
+    fig = px.bar(tags_bar)
+    fig.update_layout(height=500, width=1200)
+    fig.update_yaxes(type="log")
+    st.plotly_chart(fig)
+
     # --------------- EDA and feature extraction --------------- #
     questions['creation_date_only'] = pd.to_datetime(questions['creation_date'].dt.date)
     # resample by month
@@ -158,8 +178,6 @@ def run_analytics(query):
     # -------------------- Time series forecast based on the trend ------------ #
 
 
-    #dart_df.plot(label='Past questions')
-    #trend.plot(label='Trend forecast for questions')
 
 if __name__ == '__main__':
 

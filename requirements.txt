@@ -6,4 +6,5 @@ plotly==5.1.0
 pymc3==3.11.4
 StackAPI==0.2.0
 streamlit==1.5.1
+spacy
 tqdm
