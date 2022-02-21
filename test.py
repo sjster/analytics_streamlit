@@ -71,8 +71,26 @@ def Poisson_inference(col):
       mu = pm.Uniform('mu', lower=0, upper=1000)
       y = pm.Poisson('y', mu=mu, observed=col)
       trace_t = pm.sample(1000)
-
     return(trace_t)
+
+
+def Exponential_inference(col):
+    with pm.Model() as model:
+      lam = pm.Uniform('lam', lower=0, upper=20)
+      y = pm.Exponential('y', lam=lam, observed=col)
+      trace_t = pm.sample(1000)
+    return(trace_t)
+
+
+def get_stats(df):
+    q = df.quantile([0.25,0.50,0.75])
+    mean = df.mean()
+    stats = pd.DataFrame({'0.25': q[0.25], '0.50': q[0.50], '0.75': q[0.75], \
+            'mean': mean, 'mode': df.mode()[0]}, index=['stats'])
+    st.metric('Median value',q[0.50])
+    st.text('Quantile information')
+    st.dataframe(stats)
+
 
 
 if __name__ == '__main__':
@@ -185,13 +203,15 @@ if __name__ == '__main__':
         st.plotly_chart(fig)
 
     with col2:
+        get_stats(questions['view_count'])
         st.text('Bayesian inference of the parameters of the views distribution \n\n')
         with st.spinner('Inferring the parameters of the view distribution (Poisson)'):
             trace_t = Poisson_inference(questions['view_count'])
-            st.success('Complete')
-            summary = az.summary(trace_t)
-            st.metric('Mean estimate for views', summary['mean'])
-            st.write(summary)
+        st.success('Complete')
+        summary = az.summary(trace_t)
+        st.write(summary)
+
+
 
     # -------------------- Scores --------------- #
     st.subheader("Scores")
@@ -201,16 +221,15 @@ if __name__ == '__main__':
         st.plotly_chart(fig)
 
     with col4:
-        st.text('Bayesian inference of the parameters of the scores distribution \n\n')
+        get_stats(data['score'])
+        st.text('Bayesian inference of the parameters of the scores distribution (ignoring the negative scores) \n\n')
         with st.spinner('Inferring the parameters of the score distribution (exponential)'):
-            with pm.Model() as model:
-              lam = pm.Uniform('lam', lower=0, upper=20)
-              y = pm.Exponential('y', lam=lam, observed=data['score'])
-              trace_t = pm.sample(1000)
+            trace_t = Exponential_inference(data['score'])
         st.success('Complete')
         summary = az.summary(trace_t)
-        st.metric('Mean estimate for score (ignoring the negative scores)', summary['mean'])
         st.write(summary)
+
+
 
     col5, col6 = st.columns([1,1])
     fig = px.scatter(x=questions['view_count'], y=questions['score'],  title="Relationship between views (x) and score (y)")
